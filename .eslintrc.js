@@ -20,6 +20,8 @@ module.exports = {
     'semi': [
       'error',
       'always'
-    ]
+    ],
+  // "linebreak-style": ["error", "windows"],
+  // "no-console": "off"
   }
 };
