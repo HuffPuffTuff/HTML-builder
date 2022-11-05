@@ -4,8 +4,12 @@ const fs = require('fs');
 const stylesPath = path.resolve(__dirname, 'styles');
 const assetsPath = path.resolve(__dirname, 'assets')
 const projectDistPath = path.resolve(__dirname, 'project-dist')
-const cssBundlePath = path.resolve(projectDistPath, 'bundle.css');
+const cssBundlePath = path.resolve(projectDistPath, 'style.css');
 const cssBundleWrite = fs.createWriteStream(cssBundlePath);
+const htmlPath = path.resolve(__dirname, 'template.html');
+const componentsPath = path.resolve(__dirname, 'components')
+const htmlBundlePath = path.resolve(projectDistPath, 'index.html');
+
 
 // Create project-dist
 fs.mkdir(
@@ -74,7 +78,7 @@ fs.readdir(
             files.forEach( file => {
               const filePath = path.resolve(folderPath, file.name);
               const copyPath = path.resolve(projectDistPath, 'assets', folder.name, file.name)
-
+              
               fs.copyFile(filePath, copyPath, (err) => {
                 if (err) throw err;
               });
@@ -89,5 +93,30 @@ fs.readdir(
 
 // Html 
 
-// console.log(fileContent);
-// fs.readFile(fileContent, 'utf-8' , (error, fileContent))
+fs.readFile(htmlPath, 'utf-8', (error, fileContent) => {
+  if (error) throw error;
+  fs.readdir(componentsPath,
+    { withFileTypes: true },
+    (error, componentsFiles) => {
+      if (error) throw error;
+
+      componentsFiles.forEach( (file, i) => {
+        const extName = path.extname(file.name).trim();
+        const filePath = path.resolve(componentsPath, file.name);
+        const fileName = file.name.slice(0, -extName.length);
+
+        if (file.isFile() && extName === '.html') {
+
+          fs.readFile(filePath, 'utf-8', (err, componentFile) => {
+            if (err) throw err;
+            const htmlBundleWrite = fs.createWriteStream(htmlBundlePath, 'utf-8');
+            fileContent = fileContent.replace(`{{${fileName}}}`, componentFile);
+            
+            htmlBundleWrite.write(fileContent)
+          });
+        }
+      });
+    });
+    
+    
+})
